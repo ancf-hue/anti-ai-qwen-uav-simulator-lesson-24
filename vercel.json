@@ -28,6 +28,14 @@
     {
       "src": "*.mp3",
       "use": "@vercel/static"
+    },
+    {
+      "src": "*.txt",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.xml",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -63,20 +71,11 @@
       ]
     },
     {
-      "source": "/(.*\\.(js|css|ico|jpg|png|mp3))",
+      "source": "/(.*\\.(js|css|ico|jpg|png|mp3|html|txt|xml))",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.html)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
         }
       ]
     }
