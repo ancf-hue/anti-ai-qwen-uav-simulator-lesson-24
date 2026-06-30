@@ -111,15 +111,25 @@ body{ overflow: hidden; font-family:'Segoe UI','Orbitron', monospace; background
  #exitMenuBtn{ left: calc(50% + 10px);}
  #stealth-panel, #drone-panel{ display: none;}
 }
+
+#loading-error{ position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 99999; color: #ff3300; font-size: 24px; text-align: center; padding: 40px;}
 </style>
 </head>
 <body>
+
+<div id="loading-error">
+  <div>
+    <h2>⚠️ Ошибка загрузки</h2>
+    <p style="margin-top: 20px; font-size: 16px;">Не удалось загрузить 3D-библиотеку.<br>Проверьте интернет-соединение и обновите страницу.</p>
+    <button onclick="location.reload()" style="margin-top: 30px; padding: 15px 40px; font-size: 18px; background: #6400ff; color: white; border: none; border-radius: 10px; cursor: pointer;">🔄 Обновить</button>
+  </div>
+</div>
 
 <div class="logo-header">
   <img id="logoImg" src="favicon.ico" alt="ШПИОН">
   <div class="logo-text">
     <div class="logo-main">Qwen | Урок 24: Шпион</div>
-    <div class="logo-sub">ОПЕРАТОР ШПИОН </div>
+    <div class="logo-sub">ОПЕРАТОР ШПИОН 🕵️</div>
   </div>
 </div>
 
@@ -228,38 +238,16 @@ body{ overflow: hidden; font-family:'Segoe UI','Orbitron', monospace; background
   <source src="shpion-theme.mp3" type="audio/mpeg">
 </audio>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script>
 // Проверка загрузки Three.js
-function loadThreeJS() {
-  return new Promise((resolve, reject) => {
-    if (typeof THREE !== 'undefined') {
-      resolve();
-      return;
-    }
-    
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/three@0.128.0/build/three.min.js';
-    script.onload = () => resolve();
-    script.onerror = () => {
-      // Fallback на другой CDN
-      const fallback = document.createElement('script');
-      fallback.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
-      fallback.onload = () => resolve();
-      fallback.onerror = () => reject(new Error('Не удалось загрузить Three.js'));
-      document.head.appendChild(fallback);
-    };
-    document.head.appendChild(script);
-  });
-}
-
-// Инициализация после загрузки Three.js
-loadThreeJS().then(() => {
+if (typeof THREE === 'undefined') {
+  console.error('❌ Three.js не загружен!');
+  document.getElementById('loading-error').style.display = 'flex';
+} else {
   console.log('✅ Three.js загружен успешно');
   initApp();
-}).catch(err => {
-  console.error('❌ Ошибка загрузки Three.js:', err);
-  alert('Не удалось загрузить 3D-библиотеку. Проверьте интернет-соединение.');
-});
+}
 
 function initApp() {
 console.log('🕵️ Шпион-симулятор загружен');
@@ -330,7 +318,7 @@ function showNotification(text, type = ''){
   notifTimeout = setTimeout(() => { n.className = ''; lastNotifText = ""; }, 2500);
 }
 
-window.startSimulator = async function(difficulty){
+window.startSimulator = function(difficulty){
   currentDifficulty = difficulty;
   const config = DIFFICULTY_CONFIG[difficulty];
   state.timeLeft = config.MISSION_TIME;
@@ -587,7 +575,6 @@ function initSimulator(){
   
   const config = DIFFICULTY_CONFIG[currentDifficulty];
   
-  // Документы (цели)
   for(let i = 0; i < config.dataCount; i++){
     const angle = (i / config.dataCount) * Math.PI * 2;
     const radius = 20 + Math.random() * 30;
@@ -610,7 +597,6 @@ function initSimulator(){
     });
   }
   
-  // Радары (враги)
   for(let i = 0; i < config.radarCount; i++){
     const angle = (i / config.radarCount) * Math.PI * 2;
     const radius = 15 + Math.random() * 25;
@@ -626,7 +612,6 @@ function initSimulator(){
     radarGroup.position.set(x, 0, z);
     scene.add(radarGroup);
     
-    // Конус обнаружения
     const coneGeo = new THREE.ConeGeometry(8, 20, 16, 1, true);
     const coneMat = new THREE.MeshBasicMaterial({ 
       color: 0xff0000, 
@@ -692,7 +677,6 @@ function updateDrone(){
   if(keys['q'] || keys['shift']) state.droneVel.y += speed * 0.5;
   if(keys['e'] || keys['control']) state.droneVel.y -= speed * 0.5;
   
-  // Стелс-режим
   if(keys[' ']){
     if(state.stealthEnergy > 0){
       state.stealthActive = true;
@@ -727,7 +711,6 @@ function updateDrone(){
     droneGroup.rotation.z += (tiltZ - droneGroup.rotation.z) * 0.1;
   }
   
-  // Обновление радаров
   let detectionLevel = 0;
   state.radars.forEach(radar => {
     radar.angle += radar.speed;
@@ -751,7 +734,6 @@ function updateDrone(){
     }
   }
   
-  // Сбор документов
   const currentConfig = DIFFICULTY_CONFIG[currentDifficulty];
   state.documents.forEach(doc => {
     if(!doc.collected){
@@ -855,11 +837,13 @@ function setupEventListeners(){
     mouseDown = false;
   });
   
-  renderer.domElement.addEventListener('mousedown', (e) => {
-    mouseDown = true;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-  });
+  if (renderer && renderer.domElement) {
+    renderer.domElement.addEventListener('mousedown', (e) => {
+      mouseDown = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+    });
+  }
   
   window.addEventListener('mouseup', () => {
     mouseDown = false;
