@@ -228,8 +228,40 @@ body{ overflow: hidden; font-family:'Segoe UI','Orbitron', monospace; background
   <source src="shpion-theme.mp3" type="audio/mpeg">
 </audio>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+// Проверка загрузки Three.js
+function loadThreeJS() {
+  return new Promise((resolve, reject) => {
+    if (typeof THREE !== 'undefined') {
+      resolve();
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/three@0.128.0/build/three.min.js';
+    script.onload = () => resolve();
+    script.onerror = () => {
+      // Fallback на другой CDN
+      const fallback = document.createElement('script');
+      fallback.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
+      fallback.onload = () => resolve();
+      fallback.onerror = () => reject(new Error('Не удалось загрузить Three.js'));
+      document.head.appendChild(fallback);
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// Инициализация после загрузки Three.js
+loadThreeJS().then(() => {
+  console.log('✅ Three.js загружен успешно');
+  initApp();
+}).catch(err => {
+  console.error('❌ Ошибка загрузки Three.js:', err);
+  alert('Не удалось загрузить 3D-библиотеку. Проверьте интернет-соединение.');
+});
+
+function initApp() {
 console.log('🕵️ Шпион-симулятор загружен');
 console.log('🎮 Управление: WASD + мышь для обзора 360°');
 console.log('⚠️ Задача: Собрать данные без обнаружения!');
@@ -298,7 +330,7 @@ function showNotification(text, type = ''){
   notifTimeout = setTimeout(() => { n.className = ''; lastNotifText = ""; }, 2500);
 }
 
-async function startSimulator(difficulty){
+window.startSimulator = async function(difficulty){
   currentDifficulty = difficulty;
   const config = DIFFICULTY_CONFIG[difficulty];
   state.timeLeft = config.MISSION_TIME;
@@ -881,6 +913,7 @@ window.addEventListener('beforeunload', () => {
   }
   if(renderer) renderer.dispose();
 });
+}
 </script>
 </body>
 </html>
