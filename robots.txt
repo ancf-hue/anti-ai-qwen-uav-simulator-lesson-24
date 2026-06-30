@@ -1,8 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://anti-ai-qwen-uav-simulator-lesson-24.vercel.app/sitemap.xml
-
-# Запрет индексации служебных файлов
-Disallow: /favicon.ico
-Disallow: /shpion-theme.mp3
+Sitemap: https://anti-ai-qwen-uav-simulator-lesson-2-kohl.vercel.app/sitemap.xml
